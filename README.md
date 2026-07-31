@@ -9,6 +9,20 @@ distributed database: Raft consensus and multi-version concurrency control.**
 ![Correctness suite](https://img.shields.io/badge/assertions-598-6f42c1?style=flat-square)
 [![License: MIT](https://img.shields.io/badge/license-MIT-f5c518?style=flat-square)](LICENSE)
 
+## Verification launch kit
+
+| Inspect | Published evidence |
+|---|---|
+| Strongest result | **598 assertions** across seeded faults; five-node failover completes in **11 logical ticks** |
+| Verification | Linearizability checking, targeted invariants, randomized failover, and minority-partition tests |
+| Failure boundary | In-process simulator: no sockets, fsync, snapshots, membership changes, or multi-range transactions |
+| Reproduce | `make clean test benchmark` |
+| Interactive replay | [Isolate the leader and inspect the invariant](https://asp53826.github.io/#theater) |
+
+> Evidence contract: proposal acceptance is not commit evidence. The minority
+> leader may append locally, but only a current-term entry replicated to a
+> majority can advance the committed index.
+
 This repository is intentionally not a wrapper around an existing consensus
 library. It implements leader election, log replication, conflicting-log
 repair, majority commit, replicated state-machine application, snapshot reads,

@@ -3,6 +3,12 @@
 **A deterministic C++17 laboratory for the two correctness boundaries inside a
 distributed database: Raft consensus and multi-version concurrency control.**
 
+[![CI](https://github.com/asp53826/raft-mvcc/actions/workflows/ci.yml/badge.svg)](https://github.com/asp53826/raft-mvcc/actions/workflows/ci.yml)
+![C++17](https://img.shields.io/badge/C%2B%2B-17-00599C?style=flat-square&logo=cplusplus)
+![Dependencies](https://img.shields.io/badge/runtime_dependencies-0-2ea44f?style=flat-square)
+![Correctness suite](https://img.shields.io/badge/assertions-598-6f42c1?style=flat-square)
+[![License: MIT](https://img.shields.io/badge/license-MIT-f5c518?style=flat-square)](LICENSE)
+
 This repository is intentionally not a wrapper around an existing consensus
 library. It implements leader election, log replication, conflicting-log
 repair, majority commit, replicated state-machine application, snapshot reads,

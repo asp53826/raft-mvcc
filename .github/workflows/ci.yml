@@ -16,3 +16,18 @@ jobs:
         run: make test
       - name: Run deterministic benchmark smoke test
         run: make benchmark
+
+  wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: emscripten-core/setup-emsdk@v15
+        with:
+          version: 6.0.6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Compile the protocol sources to WebAssembly
+        run: make wasm
+      - name: Exercise election, commit, and both oracle outcomes
+        run: node wasm/smoke.mjs

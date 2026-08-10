@@ -1,0 +1,54 @@
+name: verified-release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+  artifact-metadata: write
+  actions: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: emscripten-core/setup-emsdk@v15
+        with:
+          version: 6.0.6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Test native engine and browser engine
+        run: |
+          make all test
+          make wasm
+          node wasm/smoke.mjs
+      - name: Package native and browser artifacts
+        run: |
+          mkdir -p dist/native dist/browser
+          cp build/raft_mvcc README.md LICENSE dist/native/
+          cp wasm/dist/faultline-engine.mjs wasm/dist/faultline-engine.wasm README.md LICENSE dist/browser/
+          tar -C dist/native -czf dist/raft-mvcc-${GITHUB_REF_NAME}-linux-x86_64.tar.gz .
+          tar -C dist/browser -czf dist/faultline-${GITHUB_REF_NAME}-wasm.tar.gz .
+          cd dist
+          sha256sum *.tar.gz > SHA256SUMS
+      - uses: anchore/sbom-action/download-syft@v0
+      - name: Generate SPDX SBOM
+        run: syft dir:. -o spdx-json=dist/raft-mvcc-${GITHUB_REF_NAME}.spdx.json
+      - name: Attest release provenance
+        uses: actions/attest@v4
+        with:
+          subject-path: "dist/*.tar.gz"
+      - name: Attest release SBOM
+        uses: actions/attest@v4
+        with:
+          subject-path: "dist/*.tar.gz"
+          sbom-path: "dist/raft-mvcc-${{ github.ref_name }}.spdx.json"
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/*.tar.gz dist/*.spdx.json dist/SHA256SUMS --verify-tag --generate-notes --title "FAULTLINE ${GITHUB_REF_NAME}"

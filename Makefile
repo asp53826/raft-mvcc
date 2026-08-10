@@ -15,7 +15,7 @@ TOOL := $(BUILD_DIR)/raft_mvcc
 TEST := $(BUILD_DIR)/test_raft_mvcc
 BENCH := $(BUILD_DIR)/benchmark
 
-.PHONY: all test benchmark sanitize clean
+.PHONY: all test benchmark sanitize wasm clean
 
 all: $(TOOL)
 
@@ -45,6 +45,17 @@ test: $(TEST)
 
 benchmark: $(BENCH)
 	./$(BENCH)
+
+wasm:
+	@test -n "$(shell command -v em++ 2>/dev/null)" || (echo "em++ is required: https://emscripten.org" && exit 1)
+	mkdir -p wasm/dist
+	em++ -Iinclude -std=c++17 -O3 \
+		-sMODULARIZE=1 -sEXPORT_ES6=1 -sENVIRONMENT=web,worker,node \
+		-sALLOW_MEMORY_GROWTH=1 -sFILESYSTEM=0 \
+		-sEXPORTED_FUNCTIONS='["_faultline_reset","_faultline_snapshot","_faultline_campaign","_faultline_tick","_faultline_isolate","_faultline_heal","_faultline_propose","_faultline_check_history"]' \
+		-sEXPORTED_RUNTIME_METHODS='["ccall","UTF8ToString"]' \
+		wasm/faultline.cpp src/raft.cpp src/mvcc.cpp src/linearizability.cpp \
+		-o wasm/dist/faultline-engine.mjs
 
 sanitize: CXXFLAGS := -std=c++17 -O1 -g -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined
 sanitize: LDFLAGS += -fsanitize=address,undefined

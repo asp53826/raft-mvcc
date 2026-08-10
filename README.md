@@ -225,6 +225,34 @@ make
 ./build/raft_mvcc
 ```
 
+### Browser engine: FAULTLINE
+
+The same C++17 Raft, MVCC, and linearizability sources compile to the browser
+for the interactive **FAULTLINE** failure laboratory. The browser build does
+not replace the native test target: CI runs the native correctness suite first,
+then compiles the exact protocol sources with Emscripten.
+
+```bash
+brew install emscripten   # macOS, once
+make wasm
+```
+
+The generated ES module and WebAssembly binary are written to `wasm/dist/`.
+The exported interface can reset a five-node cluster, campaign a node, advance
+logical time, isolate or heal a node, propose an MVCC mutation, and execute
+valid or invalid register histories through the real linearizability checker.
+No sockets, persistence, snapshots, or membership changes are implied by the
+browser presentation; the deliberate limits below still apply.
+
+Tagged releases publish the native Linux CLI and browser engine as separate
+archives with SHA-256 checksums, an SPDX SBOM, and GitHub-signed provenance.
+After downloading an archive, verify both its checksum and source identity:
+
+```bash
+sha256sum -c SHA256SUMS
+gh attestation verify faultline-v1.0.0-wasm.tar.gz --repo asp53826/raft-mvcc
+```
+
 Expected shape:
 
 ```text

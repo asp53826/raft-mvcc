@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: emscripten-core/setup-emsdk@v15
+      - uses: emscripten-core/setup-emsdk@v16
         with:
           version: 6.0.6
       - uses: actions/setup-node@v6
